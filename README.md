@@ -307,4 +307,4 @@ type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => i
 
 说到条件类型还有个有意思的点：如`T extends U ? X : Y`，如果T的类型是`A | B | C`，则这个条件类型会被解析为`(A extends U ? X : Y) | (B extends U ? X : Y) | (C extends U ? X : Y)`，这是一个非常常用的特性。
 ## 结束语
-要提高ts水平，还得时常翻看官网文档，GitHub，了解都有哪些特性，可能有的什么用法。当你的工具箱里有锤子时，你才可能看见钉子。
+要提高ts水平，还得时常翻看官网文档，GitHub，了解都有哪些特性，可能有的什么用法。**当你的工具箱里有锤子时，你才可能看见钉子**。
