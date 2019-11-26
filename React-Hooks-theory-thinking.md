@@ -1,4 +1,4 @@
-# React Hooks原理分析与一点体会
+# React Hooks原理解析与一点体会
 ## Hooks原理
 这里把常见的Hook方法分两类来讲，useState、useReducer、useCallback、useMemo、useRef为一类，useEffect、useImperativeHandle、useLayoutEffect为一类，前一类是状态的管理更新，后一类是副作用的实现。两类也分属不同的react执行阶段，前一类处理在渲染阶段，后一类主要处理在提交阶段
 
