@@ -319,7 +319,7 @@ if (currentHook !== null) {
 sideEffectTag |= fiberEffectTag;
 hook.memoizedState = pushEffect(UnmountPassive | MountPassive, create, destroy, nextDeps);
 ```
-上面的deps就是useEffect的第二个参数，通过`areHookInputsEqual(nextDeps, prevDeps)`判断依赖数组是否变化，内部通过`Object.is`来依次判断依赖是否相同。如果相同，这里注意传入pushEffect的第一个参数effect的tag类型是NoHookEffect，而不是UnmountPassive | MountPassive，所以在提交阶段运行commitHookEffectList时控制执行副作用的逻辑就不会生效，这样就跳过了该effect的执行，如下
+上面的deps就是useEffect的第二个参数，通过`areHookInputsEqual(nextDeps, prevDeps)`判断依赖数组是否变化，内部通过`Object.is`来依次判断依赖是否相同。如果相同，这里注意传入pushEffect的第一个参数effect的tag类型是NoHookEffect，而不是UnmountPassive | MountPassive。渲染阶段结束，又到了提交阶段，再次运行commitPassiveHookEffects，commitHookEffectList里控制执行副作用的逻辑就不会生效，这样就跳过了该effect的执行，如下
 ```ts
 // commitHookEffectList详情请回翻
 if ((effect.tag & mountTag) !== NoHookEffect) {
