@@ -239,7 +239,7 @@ function pushEffect(tag, create, destroy, deps) {
 ```
 可以看到先获取了这个组件的componentUpdateQueue，这里存放的是这个组件的effect链表，然后将effect插入了链表中，它的结构跟上面说的state的更新队列的结构是一样的，返回的是这个effect的信息，那么这个effect的hook.memoizedState存放的就是这个effect的信息
 
-还记得上面讲useState时，首次渲染运行函数结束后renderWithHooks还做了什么吗，再来复习一下
+还记得上面讲useState时，渲染运行函数结束后renderWithHooks还做了什么吗，再来复习一下
 ```ts
 const renderedWork: Fiber = (currentlyRenderingFiber: any);
 
