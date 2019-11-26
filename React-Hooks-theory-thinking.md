@@ -209,7 +209,7 @@ const nextDeps = deps === undefined ? null : deps;
 sideEffectTag |= fiberEffectTag;
 hook.memoizedState = pushEffect(UnmountPassive | MountPassive, create, undefined, nextDeps);
 ```
-从代码可以知道，effect同样是一个hook，也就是说hook队列里同时存着state hook和effect hook。不同的是，state的hook.memoizedState存放的是当前state值，而effect的hook.memoizedState存放的是上面代码中pushEffect运行的结果，pushEffect的第一个参数是effect的tag类型UnmountPassive | MountPassive，effect的tag类型决定着不同的effect的执行时机，后面会说到。先看看pushEffect做了什么
+从代码可以知道，effect同样是一个hook，也就是说hook队列里同时存着state hook和effect hook。不同的是，state的hook.memoizedState存放的是当前state值，而effect的hook.memoizedState存放的是上面代码中pushEffect运行的结果，pushEffect的第一个参数是effect的tag类型UnmountPassive | MountPassive。先看看pushEffect做了什么
 ```ts
 function pushEffect(tag, create, destroy, deps) {
     const effect: Effect = {
