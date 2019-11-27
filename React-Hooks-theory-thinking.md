@@ -26,7 +26,7 @@ const hook: Hook = {
 ```
 对于useState hook来说，memoizedState存放的是当前state值，queue存放的是该state的异步更新队列，next则存放组件中下一个hook的信息。因此可以知道，是以链表的形式存储组件中所有hooks信息。下面我们按整个渲染绘制流程来分析
 
-函数式组件的render都是renderWithHooks方法实现的，首次渲染时会执行`let children = Component(props, refOrContext);`得到组件的信息。这一步useState取的就是mountState
+函数式组件的render都是renderWithHooks方法实现的，渲染时会执行`let children = Component(props, refOrContext);`得到组件的信息。这一步useState取的就是mountState
 ```ts
 function mountState<S>(
   initialState: (() => S) | S,
