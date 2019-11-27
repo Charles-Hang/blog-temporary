@@ -166,7 +166,7 @@ if (first !== null) {
     newBaseUpdate = prevUpdate;
     newBaseState = newState;
 
-    // 使用Object.is对比新旧state，不一样才会重渲染
+    // 使用Object.is对比新旧state，不一样才会重绘制
     if (!is(newState, hook.memoizedState)) {
       markWorkInProgressReceivedUpdate();
     }
