@@ -2,7 +2,7 @@
 ## Hooks原理
 这里把常见的Hook方法分两类来讲，useState、useReducer、useCallback、useMemo、useRef为一类，useEffect、useImperativeHandle、useLayoutEffect为一类，前一类是状态的管理更新，后一类是副作用的实现。两类也分属不同的react执行阶段，前一类处理在渲染阶段，后一类主要处理在提交阶段
 
-由于函数式组件的重新render也就是整个组件函数的再执行的过程，所以对于Hook方法来说就需要区分是首次渲染运行还是重渲染运行。react内部便将这些Hook方法分成了挂载时和更新时两类：HooksDispatcherOnMount和HooksDispatcherOnUpdate两个对象包含了所有可用的Hook方法。对于useState来说对应的就是mountState和updateState方法，对应useEffect来说对应的就是mountEffect和updateEffect方法。下面分别以useState和useEffect为例说说它们的原理
+由于函数式组件的重新渲染也就是整个组件函数的再执行的过程，所以对于Hook方法来说就需要区分是首次渲染运行还是重渲染运行。react内部便将这些Hook方法分成了挂载时和更新时两类：HooksDispatcherOnMount和HooksDispatcherOnUpdate两个对象包含了所有可用的Hook方法。对于useState来说对应的就是mountState和updateState方法，对应useEffect来说对应的就是mountEffect和updateEffect方法。下面分别以useState和useEffect为例说说它们的原理
 ### useState
 在react内部每个组件都有至少一个Fiber进行着工作。对于函数式组件的Fiber来说，如下两个属性
 ```ts
@@ -24,7 +24,7 @@ const hook: Hook = {
     next: null,
 };
 ```
-对于useState hook来说，memoizedState存放的是当前state值，queue存放的是该state的异步更新队列，next则存放组件中下一个hook的信息。因此可以知道，是以链表的形式存储组件中所有hooks信息。下面我们按整个渲染流程来分析
+对于useState hook来说，memoizedState存放的是当前state值，queue存放的是该state的异步更新队列，next则存放组件中下一个hook的信息。因此可以知道，是以链表的形式存储组件中所有hooks信息。下面我们按整个渲染绘制流程来分析
 
 函数式组件的render都是renderWithHooks方法实现的，首次渲染时会执行`let children = Component(props, refOrContext);`得到组件的信息。这一步useState取的就是mountState
 ```ts
@@ -67,7 +67,7 @@ renderedWork.effectTag |= sideEffectTag;
 ```
 renderedWork也就是当前组件的Fiber，可以看到就再这里把该组件的第一个hook赋给了memoizedState，把effect队列（componentUpdateQueue）赋给了updateQueue，effect下面再继续说
 
-假设现在首次渲染结束了，下面该更新状态了
+假设现在首次渲染结束了，提交并绘制也成功了，下面该更新状态了
 
 其实useState的实现是useReducer实现上的一层封装，看看更新的updateState的实现
 ```ts
@@ -199,7 +199,7 @@ const effect: Effect = {
     next: (null: any),
 };
 ```
-tag表示该effect的类型，不同的effect执行的时间及细节不同（比如useEffect和useLayoutEffect，前者与DOM绘制异步，后者在DOM绘制之前同步进行，会阻塞绘制）就是靠这个tag来区分的，next存放下一个effect的信息，effect也是以链表的形式存储组件中的effect信息的。下面我们依然按渲染流程来分析
+tag表示该effect的类型，不同的effect执行的时间及细节不同（比如useEffect和useLayoutEffect，前者与DOM绘制异步，后者在DOM绘制之前同步进行，会阻塞绘制）就是靠这个tag来区分的，next存放下一个effect的信息，effect也是以链表的形式存储组件中的effect信息的。下面我们依然按渲染绘制流程来分析
 
 上面提到renderWithHooks方法处理函数式组件的渲染，首次渲染时useEffect取的是mountEffect
 ```ts
@@ -328,14 +328,14 @@ if ((effect.tag & mountTag) !== NoHookEffect) {
     effect.destroy = create();
 }
 ```
-useEffect的原理也分析的差不多了，这里我不禁要赞叹React里对effect的处理十分优美。
+useEffect的原理到此也分析的差不多了。
 ### 原理小结
 React除了在Fiber对象里存了hooks的信息外并没有提供额外的数据保持与记录处理，组件里对state（包括useCallback、useMemo返回的值）的一切操作都符合js原生函数的特性，因此对state的使用就要考虑闭包的影响。每次渲染后state都是最新的值，那么上一轮渲染时进行的异步操作中state如果没有额外处理根据闭包特性就会是上一轮渲染的值。其他的Hook方法：useCallback、useMemo、useRef、useEffect、useImperativeHandle、useLayoutEffect实现上与useState、useEffect类似，如果感兴趣可以到源码`packages/react-reconciler/src/ReactFiberHooks.js`中查看
 
 最后放一张简易的组件对应Fiber的结构图方便进行记忆与梳理
 ![hook-queue](https://charles-hang.github.io/images/reactHooksTheoryPractice/FC-Fiber.jpg)
 ## 一点体会
-React Hooks给我的感觉是向函数式编程做的一点点试探与铺垫，跟着这股感觉走，我认为在写函数式组件时我们应该抛弃类组件的思维，尤其是生命周期这个概念，任何像是用自定义Hooks模拟生命周期的方式不是说不行，而是与React Hooks设计的思想有悖。函数式组件的执行就两步：渲染 -> 执行副作用，然后往复。没有副作用的函数式组件就是一个纯函数，意思就是给定相同的props一定会渲染出相同的视图。那副作用是什么呢？任何破坏了这种一一对应的关系的作用就是副作用，比如发送了一个http请求并渲染出结果，根据返回的不同得到了不同的视图。用这个函数式的思维来写React Hooks其实就比类组件要简单多了，简洁明了。
+React Hooks给我的感觉是向函数式编程做的一点点试探与铺垫，跟着这股感觉走，我认为在写函数式组件时我们应该抛弃类组件的思维，尤其是生命周期这个概念，任何像是用自定义Hooks模拟生命周期的方式不是说不行，而是与React Hooks设计的思想有悖。函数式组件的执行就两步：渲染 -> 执行副作用并绘制，然后往复。没有副作用的函数式组件就是一个纯函数，意思就是给定相同的props一定会渲染出相同的视图。那副作用是什么呢？任何破坏了这种一一对应的关系的作用就是副作用，比如发送了一个http请求并渲染出结果，根据返回的不同得到了不同的视图。用这个函数式的思维来写React Hooks其实就比类组件要简单多了，简洁明了。
 
 React Hooks能更好的实现数据驱动，用一个例子来说明：一个含有筛选、查询和分页的列表页，对比两种不同的处理方法
 ```ts
